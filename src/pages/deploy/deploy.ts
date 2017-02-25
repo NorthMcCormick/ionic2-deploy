@@ -1,6 +1,8 @@
 import { Component } from '@angular/core';
 import { NavController, NavParams } from 'ionic-angular';
-import {Deploy} from '@ionic/cloud-angular';  
+import { Deploy } from '@ionic/cloud-angular';  
+
+import { TabsPage } from '../tabs/tabs';
 
 /*
   Generated class for the Deploy page.
@@ -14,25 +16,30 @@ import {Deploy} from '@ionic/cloud-angular';
 })
 export class DeployPage {
 
-	constructor(public navCtrl: NavController, public navParams: NavParams, public deploy: Deploy) {
+	public updateText: String = '';
 
+	constructor(public navCtrl: NavController, public navParams: NavParams, public deploy: Deploy) {
+		this.deploy.check().then((snapshotAvailable: boolean) => {
+			if (snapshotAvailable) {
+				this.updateText = 'Grabbing the best experience for you';
+				console.log('There\'s an update!');
+				this.deploy.download().then(() => {
+					this.updateText = 'Updating...';
+
+					return this.deploy.extract();
+				}).then(() => {
+					this.deploy.load();
+				});
+			}else{
+				console.log('No new code :(');
+
+				navCtrl.setRoot(TabsPage);
+			}
+		});	
 	}
 
   ionViewDidLoad() {
     console.log('ionViewDidLoad DeployPage');
-
-    this.deploy.check().then((snapshotAvailable: boolean) => {
-			if (snapshotAvailable) {
-				console.log('There\'s an update!');
-				this.deploy.download().then(() => {
-					return this.deploy.extract().then(() => {
-						this.deploy.load();
-					});
-				});
-			}else{
-				console.log('No new code :(');
-			}
-		});	
   }
 
 }
